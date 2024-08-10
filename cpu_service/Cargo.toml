@@ -1,0 +1,8 @@
+[package]
+name = "cpu_service"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+sysinfo = "0.30.13"
+common = { path = "../common" }
