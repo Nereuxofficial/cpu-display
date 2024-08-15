@@ -4,9 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bevy = { version = "0.14.0", features = ["dynamic_linking"] }
+bevy = { version = "0.14.0" }
 common = { path = "../common" }
 rand = "0.8.5"
+sysinfo = "0.31.2"
 
 # Enable a small amount of optimization in the dev profile.
 [profile.dev]

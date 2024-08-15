@@ -1,10 +1,11 @@
 use core::f32;
+use std::borrow::BorrowMut;
 
 use bevy::{
     prelude::*,
     sprite::{MaterialMesh2dBundle, Mesh2dHandle, Wireframe2dConfig, Wireframe2dPlugin},
 };
-use rand::{prelude::SliceRandom, Fill};
+use rand::{distributions::Bernoulli, distributions::Distribution, prelude::SliceRandom, Fill};
 use rand::{thread_rng, Rng};
 
 const RES_WIDTH: u16 = 64;
@@ -27,10 +28,9 @@ struct Board {
 }
 
 #[derive(Component)]
-struct Location {
-    x: u16,
-    y: u16,
-}
+struct Location(usize);
+#[derive(Resource)]
+struct Syswrapper(sysinfo::System);
 
 fn main() {
     let mut rng = thread_rng();
@@ -42,8 +42,10 @@ fn main() {
         },
     };
     Fill::try_fill(&mut board.matrix.vals, &mut rng);
+    let system = Syswrapper(sysinfo::System::new());
     App::new()
         .insert_resource(board)
+        .insert_resource(system)
         .add_plugins((
             DefaultPlugins.set(WindowPlugin {
                 primary_window: Some(Window {
@@ -84,9 +86,10 @@ fn setup(
         })
         .with_children(|builder| {
             for c in 0..board.width {
-                for r in 0..board.width {
-                    let val = board.matrix.vals[usize::from(c + r)];
-                    info!("val: {}", val);
+                for r in 0..board.height {
+                    let idx = usize::from(c + r * 64);
+                    info!("c: {}, r: {}, idx: {}", c, r, idx);
+                    let val = board.matrix.vals[idx];
                     let color = Color::rgb(val as f32 / 255., 0., 0.);
                     info!("color: {:?}", color);
                     builder.spawn((
@@ -101,22 +104,45 @@ fn setup(
                             background_color: BackgroundColor(color),
                             ..Default::default()
                         },
-                        Location { x: c, y: r },
+                        Location(idx),
                     ));
                 }
             }
         });
 }
 
-fn update_leds(mut board: ResMut<Board>) {
+fn update_leds(mut board: ResMut<Board>, mut system: ResMut<Syswrapper>) {
     let mut rng = thread_rng();
-    Fill::try_fill(&mut board.matrix.vals, &mut rng);
+    let mut cpu_indexes = (0..12)
+        .into_iter()
+        .map(|i| generate_indexes(i))
+        .collect::<Vec<_>>();
+    system.0.refresh_cpu_usage();
+    let mut cpu_usages = system.0.cpus().iter();
+    let mut percentages = [0.; 12];
+    for i in 0..percentages.len() {
+        // We assume for now that threads on the same core are adjacent
+        percentages[i] =
+            (cpu_usages.next().unwrap().cpu_usage() + cpu_usages.next().unwrap().cpu_usage()) / 2.;
+    }
+    for i in 0..12 {
+        let cpu_usage = percentages[i];
+        let d = Bernoulli::new(cpu_usage as f64 / 100.).unwrap();
+        for led in 0..cpu_indexes[i].clone().len() {
+            let value = if d.sample(&mut rng) { 255 } else { 0 };
+            trace!("Setting value: {} for led: {} on CPU: {}", value, led, i);
+            board.matrix.vals[led] = value;
+        }
+    }
 }
 
 fn draw_board(mut query: Query<(&mut BackgroundColor, &Location)>, board: Res<Board>) {
-    for (mut color, bundle) in &mut query {
-        let val = board.matrix.vals[usize::from(bundle.x + bundle.y)];
-        color.0 = Color::rgb(val as f32 / 255., 0., 0.);
+    for (mut color, location) in &mut query {
+        let val = board.matrix.vals.get(location.0).unwrap_or_else(|| {
+            error!("Location: {} not found in board", location.0);
+            &0
+        });
+        color.0 = Color::rgb(*val as f32 / 255., 0., 0.);
     }
 }
 
@@ -135,16 +161,19 @@ fn toggle_wireframe(
 // If we assume 10x16 LEDs represent a single CPU core. We have 12 cores so we need to get the LED slice for each one.
 // Given our 64*32 LED matrix we leave the last four rows for 60*32 LEDs used.
 /// Generate the LED indexes of the specific CPU
-fn generate_indexes(cpu_index: usize) -> Vec<usize> {
-    let mut indexes = Vec::new();
+const fn generate_indexes(cpu_index: usize) -> [usize; (CPU_WIDTH * CPU_HEIGHT) as usize] {
+    let mut indexes = [0; (CPU_WIDTH * CPU_HEIGHT) as usize];
     let mut idx = if cpu_index < 6 { 0 } else { TOTAL_LEDS / 2 };
     let rel_cpu = cpu_index % 6;
+    let mut len = 0;
     loop {
         let min_x = (CPU_WIDTH as usize) * rel_cpu;
         let max_x = min_x + CPU_WIDTH as usize;
-        if (min_x..max_x).contains(&(idx % (RES_WIDTH as usize))) {
-            indexes.push(idx);
-            if indexes.len() as u8 == CPU_WIDTH * CPU_HEIGHT {
+        let rel_idx = idx % (RES_WIDTH as usize);
+        if rel_idx >= min_x && rel_idx < max_x {
+            indexes[len] = idx;
+            len += 1;
+            if len as u8 == CPU_WIDTH * CPU_HEIGHT {
                 break;
             }
         }
@@ -157,7 +186,7 @@ fn generate_indexes(cpu_index: usize) -> Vec<usize> {
 mod tests {
     use crate::{generate_indexes, CPU_HEIGHT, CPU_WIDTH, RES_WIDTH};
 
-    fn print_chunks(res: &Vec<usize>) {
+    fn print_chunks(res: &[usize]) {
         for n in res.chunks(CPU_WIDTH as usize).into_iter() {
             println!("{n:?}");
         }
@@ -166,7 +195,7 @@ mod tests {
     #[test]
     fn test_generate_indexes() {
         let res = generate_indexes(0);
-        assert_eq!((CPU_WIDTH * CPU_HEIGHT) as usize, res.len());
+        assert_eq!(res.clone()[0], 0);
         print_chunks(&res);
 
         let cpu_6 = generate_indexes(6);

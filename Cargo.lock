@@ -300,7 +300,6 @@ version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8e938630e9f472b1899c78ef84aa907081b23bad8333140e2295c620485b6ee7"
 dependencies = [
- "bevy_dylib",
  "bevy_internal",
 ]
 
@@ -505,16 +504,7 @@ dependencies = [
  "bevy_time",
  "bevy_utils",
  "const-fnv1a-hash",
- "sysinfo",
-]
-
-[[package]]
-name = "bevy_dylib"
-version = "0.14.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f8494bf550eb30f570da1563217bcea25530cf29b35d35887ca6c2d76a411d00"
-dependencies = [
- "bevy_internal",
+ "sysinfo 0.30.13",
 ]
 
 [[package]]
@@ -1523,7 +1513,7 @@ name = "cpu_service"
 version = "0.1.0"
 dependencies = [
  "common",
- "sysinfo",
+ "sysinfo 0.30.13",
 ]
 
 [[package]]
@@ -1647,6 +1637,7 @@ dependencies = [
  "bevy",
  "common",
  "rand",
+ "sysinfo 0.31.2",
 ]
 
 [[package]]
@@ -3417,6 +3408,20 @@ dependencies = [
  "once_cell",
  "rayon",
  "windows 0.52.0",
+]
+
+[[package]]
+name = "sysinfo"
+version = "0.31.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d4115055da5f572fff541dd0c4e61b0262977f453cc9fe04be83aba25a89bdab"
+dependencies = [
+ "core-foundation-sys",
+ "libc",
+ "memchr",
+ "ntapi",
+ "rayon",
+ "windows 0.54.0",
 ]
 
 [[package]]
