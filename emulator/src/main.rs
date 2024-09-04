@@ -158,29 +158,7 @@ fn toggle_wireframe(
     }
 }
 
-// If we assume 10x16 LEDs represent a single CPU core. We have 12 cores so we need to get the LED slice for each one.
-// Given our 64*32 LED matrix we leave the last four rows for 60*32 LEDs used.
-/// Generate the LED indexes of the specific CPU
-const fn generate_indexes(cpu_index: usize) -> [usize; (CPU_WIDTH * CPU_HEIGHT) as usize] {
-    let mut indexes = [0; (CPU_WIDTH * CPU_HEIGHT) as usize];
-    let mut idx = if cpu_index < 6 { 0 } else { TOTAL_LEDS / 2 };
-    let rel_cpu = cpu_index % 6;
-    let mut len = 0;
-    loop {
-        let min_x = (CPU_WIDTH as usize) * rel_cpu;
-        let max_x = min_x + CPU_WIDTH as usize;
-        let rel_idx = idx % (RES_WIDTH as usize);
-        if rel_idx >= min_x && rel_idx < max_x {
-            indexes[len] = idx;
-            len += 1;
-            if len as u8 == CPU_WIDTH * CPU_HEIGHT {
-                break;
-            }
-        }
-        idx += 1;
-    }
-    indexes
-}
+
 
 #[cfg(debug_assertions)]
 mod tests {

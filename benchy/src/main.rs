@@ -1,17 +1,20 @@
-//! Displays a procedurally generated flame
-//!
-//! Based on https://indigoengine.io/docs/guides/howto-fire-shader
+//! Adapted from the excellent [hub75-pio-rs](https://github.com/kjagiello/hub75-pio-rs/) benchy example because i could not get the
+//! dependencies to match up.
 #![no_std]
 #![no_main]
 #![feature(generic_const_exprs)]
+#![feature(new_range_api)]
 
 use bsp::entry;
-use rand::{Rng, SeedableRng};
+use common::{generate_indexes, CPUUsage, Packet, CPU_WIDTH, CPU_HEIGHT, THREAD_COUNT};
 use core::ptr;
+use core::range::Range;
 use defmt::*;
 use defmt_rtt as _;
 use embedded_graphics::{pixelcolor::Rgb888, prelude::*};
+use heapless::Vec;
 use panic_probe as _;
+use rand::{Rng, SeedableRng};
 
 use bsp::hal::pio::PIOExt;
 use bsp::hal::{
@@ -21,12 +24,10 @@ use bsp::hal::{
     sio::Sio,
     watchdog::Watchdog,
 };
-use hub75_pio;
 use hub75_pio::dma::DMAExt;
 use hub75_pio::lut::GammaLut;
 
 use core::cell::RefCell;
-use core::str;
 use critical_section::Mutex;
 use embedded_graphics::{
     mono_font::{ascii::FONT_6X10, MonoTextStyle},
@@ -137,12 +138,28 @@ fn main() -> ! {
             &lut,
         )
     };
-    let mut rng = rand::rngs::SmallRng::from_seed([8;16]);
+    let mut rng = rand::rngs::SmallRng::from_seed([8; 16]);
+    info!("Starting main loop");
+    let mut cpu_usages = Packet { cores: Vec::new() };
+    for id in 0..24 {
+        cpu_usages.cores.push(CPUUsage {
+            id,
+            usage: rng.gen_range(0f32..100f32),
+        });
+    }
     loop {
-        let pixels = [embedded_graphics::Pixel(Point::new(1, 1), Rgb888::GREEN), embedded_graphics::Pixel(Point::new(1, 1), Rgb888::RED)];
+        display.clear(Rgb888::BLACK).unwrap();
+        let pixels = cpu_usages.cores.iter().map(|thread| {
+                generate_indexes(thread.id as usize)
+                    .iter()
+                    .filter(|_|rng.gen_range(0f32..100f32) < thread.usage).map(|i| Pixel(Point::new((i%64) as i32, (i/64) as i32), if thread.id < 12{Rgb888::GREEN} else {Rgb888::RED})).collect::<Vec<_, {const {CPU_WIDTH as usize* CPU_HEIGHT as usize}}>>()
+        }).flatten();
         display.draw_iter(pixels).unwrap();
         display.commit();
-        delay.delay_ms(150);
+        delay.delay_ms(100);
+        for id in 0..24 {
+            cpu_usages.cores[id].usage = rng.gen_range(0f32..100f32);
+        }
     }
 }
 

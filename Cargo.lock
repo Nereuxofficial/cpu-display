@@ -1412,6 +1412,8 @@ dependencies = [
 name = "common"
 version = "0.1.0"
 dependencies = [
+ "heapless",
+ "rand",
  "serde",
 ]
 
@@ -1685,6 +1687,7 @@ dependencies = [
 name = "dashy"
 version = "0.1.0"
 dependencies = [
+ "common",
  "cortex-m",
  "cortex-m-rt",
  "critical-section 1.1.3",
@@ -1693,6 +1696,7 @@ dependencies = [
  "embedded-graphics",
  "embedded-hal 0.2.7",
  "embedded-time",
+ "heapless",
  "hub75-pio 0.1.0 (git+https://github.com/kjagiello/hub75-pio-rs?rev=262bca7)",
  "libm",
  "nalgebra",
@@ -2472,6 +2476,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0bfb9eb618601c89945a70e254898da93b13be0388091d42117462b265bb3fad"
 dependencies = [
  "hash32",
+ "serde",
  "stable_deref_trait",
 ]
 
