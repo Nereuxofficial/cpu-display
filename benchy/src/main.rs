@@ -7,6 +7,10 @@
 
 use bsp::entry;
 use common::{generate_indexes, CPUUsage, Packet, CPU_WIDTH, CPU_HEIGHT, THREAD_COUNT};
+use rp_pico::hal::usb::{self, UsbBus};
+use usb_device::bus::UsbBusAllocator;
+use usb_device::device::{UsbDeviceBuilder, UsbVidPid};
+use usbd_serial::SerialPort;
 use core::ptr;
 use core::range::Range;
 use defmt::*;
@@ -33,7 +37,7 @@ use embedded_graphics::{
     mono_font::{ascii::FONT_6X10, MonoTextStyle},
     text::Text,
 };
-use rp_pico as bsp;
+use rp_pico::{self as bsp, hal};
 
 static mut DISPLAY_BUFFER: hub75_pio::DisplayMemory<64, 32, 12> = hub75_pio::DisplayMemory::new();
 static COUNTER: Mutex<RefCell<u32>> = Mutex::new(RefCell::new(0u32));
@@ -138,6 +142,19 @@ fn main() -> ! {
             &lut,
         )
     };
+    info!("Setting up USB Serial");
+    // TODO: Maybe do this before doing weird stuff with the resets
+    let usb_bus = UsbBusAllocator::new(UsbBus::new(
+        pac.USBCTRL_REGS,
+        pac.USBCTRL_DPRAM,
+        clocks.usb_clock,
+        true,
+        &mut resets
+    ));
+    let mut serial = SerialPort::new(&usb_bus);
+    let mut usb_dev = UsbDeviceBuilder::new(&usb_bus, UsbVidPid(0x16c0, 0x27dd)).manufacturer("Bene Industries").product("CPU Usage Display").serial_number("0.1").device_class(2).build();
+
+    
     let mut rng = rand::rngs::SmallRng::from_seed([8; 16]);
     info!("Starting main loop");
     let mut cpu_usages = Packet { cores: Vec::new() };
@@ -148,11 +165,25 @@ fn main() -> ! {
         });
     }
     loop {
+        loop {
+            if usb_dev.poll(&mut [&mut serial]){
+                let mut buf = [0u8; 1024];
+                match serial.read(&mut buf){
+                    Err(e) => {
+                        info!("{:?}", e);
+                    }
+                    Ok(0) => {}
+                    Ok(count) => {
+                        // Deserialize the object using postcard
+                    }
+                }
+            }
+        }
         display.clear(Rgb888::BLACK).unwrap();
         let pixels = cpu_usages.cores.iter().map(|thread| {
                 generate_indexes(thread.id as usize)
                     .iter()
-                    .filter(|_|rng.gen_range(0f32..100f32) < thread.usage).map(|i| Pixel(Point::new((i%64) as i32, (i/64) as i32), if thread.id < 12{Rgb888::GREEN} else {Rgb888::RED})).collect::<Vec<_, {const {CPU_WIDTH as usize* CPU_HEIGHT as usize}}>>()
+                    .filter(|_|rng.gen_range(0f32..100f32) < thread.usage).map(|i| Pixel(Point::new((i%64) as i32, (i/64) as i32), RgbColor::RED)).collect::<Vec<_, {const {CPU_WIDTH as usize* CPU_HEIGHT as usize}}>>()
         }).flatten();
         display.draw_iter(pixels).unwrap();
         display.commit();
