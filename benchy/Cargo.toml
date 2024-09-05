@@ -26,6 +26,7 @@ common = { path = "../common" }
 heapless = "0.8.0"
 usb-device = "0.2.9"
 usbd-serial = "0.1.1"
+postcard = "1.0.10"
 
 # cargo build/run
 [profile.dev]

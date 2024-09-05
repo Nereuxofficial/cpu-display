@@ -94,7 +94,7 @@ fn main() -> ! {
     let (mut pio, sm0, sm1, sm2, _) = pac.PIO0.split(&mut pac.RESETS);
 
     // Reset DMA
-    let resets = pac.RESETS;
+    let mut resets = pac.RESETS;
     resets.reset.modify(|_, w| w.dma().set_bit());
     resets.reset.modify(|_, w| w.dma().clear_bit());
     while resets.reset_done.read().dma().bit_is_clear() {}
@@ -157,28 +157,24 @@ fn main() -> ! {
     
     let mut rng = rand::rngs::SmallRng::from_seed([8; 16]);
     info!("Starting main loop");
-    let mut cpu_usages = Packet { cores: Vec::new() };
-    for id in 0..24 {
-        cpu_usages.cores.push(CPUUsage {
-            id,
-            usage: rng.gen_range(0f32..100f32),
-        });
-    }
+    
     loop {
-        loop {
+        let cpu_usages: Packet = loop {
             if usb_dev.poll(&mut [&mut serial]){
                 let mut buf = [0u8; 1024];
                 match serial.read(&mut buf){
                     Err(e) => {
-                        info!("{:?}", e);
                     }
                     Ok(0) => {}
                     Ok(count) => {
                         // Deserialize the object using postcard
+                        if let Ok(usage) =  postcard::from_bytes(&buf[..count]){
+                            break usage;
+                        }
                     }
                 }
             }
-        }
+        };
         display.clear(Rgb888::BLACK).unwrap();
         let pixels = cpu_usages.cores.iter().map(|thread| {
                 generate_indexes(thread.id as usize)
@@ -187,10 +183,6 @@ fn main() -> ! {
         }).flatten();
         display.draw_iter(pixels).unwrap();
         display.commit();
-        delay.delay_ms(100);
-        for id in 0..24 {
-            cpu_usages.cores[id].usage = rng.gen_range(0f32..100f32);
-        }
     }
 }
 
