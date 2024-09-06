@@ -24,9 +24,9 @@ critical-section = { version = "1.0.0" }
 rand = { version = "0.8.5", default-features = false, features = ["small_rng"]}
 common = { path = "../common" }
 heapless = "0.8.0"
-usb-device = "0.2.9"
+usb-device = {version = "0.2.9", features = ["defmt"]}
 usbd-serial = "0.1.1"
-postcard = "1.0.10"
+postcard = {version = "1.0.10", features = ["use-defmt"]}
 
 # cargo build/run
 [profile.dev]

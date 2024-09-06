@@ -113,7 +113,7 @@ fn main() -> ! {
         pac::NVIC::unmask(pac::Interrupt::DMA_IRQ_0);
     }
 
-    let lut = {
+    let lut: GammaLut<12, _, hub75_pio::lut::Init> = {
         let lut: GammaLut<12, _, _> = GammaLut::new();
         lut.init((2.1, 2.1, 2.1))
     };
@@ -164,25 +164,31 @@ fn main() -> ! {
                 let mut buf = [0u8; 1024];
                 match serial.read(&mut buf){
                     Err(e) => {
+                        info!("{:?}", e);
                     }
-                    Ok(0) => {}
+                    Ok(0) => {
+                        info!("No bytes received");
+                    }
                     Ok(count) => {
                         // Deserialize the object using postcard
-                        if let Ok(usage) =  postcard::from_bytes(&buf[..count]){
-                            break usage;
+                        match postcard::from_bytes(&buf){
+                            Ok(msg) => {
+                                break msg;
+                            }
+                            Err(e) => info!("Failed deserializing {} bytes with {:?}", count, e)
                         }
                     }
                 }
             }
         };
-        display.clear(Rgb888::BLACK).unwrap();
         let pixels = cpu_usages.cores.iter().map(|thread| {
                 generate_indexes(thread.id as usize)
                     .iter()
-                    .filter(|_|rng.gen_range(0f32..100f32) < thread.usage).map(|i| Pixel(Point::new((i%64) as i32, (i/64) as i32), RgbColor::RED)).collect::<Vec<_, {const {CPU_WIDTH as usize* CPU_HEIGHT as usize}}>>()
+                    .filter(|_|rng.gen_range(0f32..100f32) < thread.usage).map(|i| Pixel(Point::new((i%64) as i32, (i/64) as i32), if thread.id < (THREAD_COUNT/2) as u8 {Rgb888::GREEN} else { Rgb888::RED})).collect::<Vec<_, {const {CPU_WIDTH as usize* CPU_HEIGHT as usize}}>>()
         }).flatten();
         display.draw_iter(pixels).unwrap();
         display.commit();
+        delay.delay_ms(100);
     }
 }
 
