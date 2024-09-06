@@ -1193,12 +1193,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "46afbd2983a5d5a7bd740ccb198caf5b82f45c40c09c0eed36052d91cb92e719"
 
 [[package]]
-name = "bitfield"
-version = "0.14.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2d7e60934ceec538daadb9d8432424ed043a904d8e0243f3c6446bce549a46ac"
-
-[[package]]
 name = "bitflags"
 version = "1.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1551,8 +1545,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8ec610d8f49840a5b376c69663b6369e71f4b34484b9b2eb29fb918d92516cb9"
 dependencies = [
  "bare-metal 0.2.5",
- "bitfield 0.13.2",
- "embedded-hal 0.2.7",
+ "bitfield",
+ "embedded-hal",
  "volatile-register",
 ]
 
@@ -1709,19 +1703,19 @@ dependencies = [
  "cortex-m-rt",
  "critical-section 1.1.3",
  "defmt",
- "defmt-rtt 0.3.2",
+ "defmt-rtt",
  "embedded-graphics",
- "embedded-hal 0.2.7",
+ "embedded-hal",
  "embedded-time",
  "heapless 0.8.0",
- "hub75-pio 0.1.0 (git+https://github.com/kjagiello/hub75-pio-rs?rev=262bca7)",
+ "hub75-pio",
  "libm",
  "nalgebra",
  "panic-probe",
  "postcard",
  "rand",
- "rp-pico 0.8.0",
- "usb-device 0.2.9",
+ "rp-pico",
+ "usb-device",
  "usbd-serial",
 ]
 
@@ -1782,16 +1776,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1d2cbbbd58847d508d97629b32cd9730a2d28532f71e219714614406029f18b1"
 dependencies = [
  "critical-section 0.2.8",
- "defmt",
-]
-
-[[package]]
-name = "defmt-rtt"
-version = "0.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bab697b3dbbc1750b7c8b821aa6f6e7f2480b47a99bc057a2ed7b170ebef0c51"
-dependencies = [
- "critical-section 1.1.3",
  "defmt",
 ]
 
@@ -1904,31 +1888,6 @@ checksum = "35949884794ad573cf46071e41c9b60efb0cb311e3ca01f7af807af1debc66ff"
 dependencies = [
  "nb 0.1.3",
  "void",
-]
-
-[[package]]
-name = "embedded-hal"
-version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "361a90feb7004eca4019fb28352a9465666b24f840f5c3cddf0ff13920590b89"
-
-[[package]]
-name = "embedded-hal-async"
-version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0c4c685bbef7fe13c3c6dd4da26841ed3980ef33e841cddfa15ce8a8fb3f1884"
-dependencies = [
- "embedded-hal 1.0.0",
-]
-
-[[package]]
-name = "embedded-hal-nb"
-version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fba4268c14288c828995299e59b12babdbe170f6c6d73731af1b4648142e8605"
-dependencies = [
- "embedded-hal 1.0.0",
- "nb 1.1.0",
 ]
 
 [[package]]
@@ -2078,22 +2037,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4f9bfee30e4dedf0ab8b422f03af778d9612b63f502710fc500a334ebe2de645"
 dependencies = [
  "simd-adler32",
-]
-
-[[package]]
-name = "firmware"
-version = "0.1.0"
-dependencies = [
- "cortex-m",
- "cortex-m-rt",
- "critical-section 1.1.3",
- "defmt",
- "defmt-rtt 0.4.1",
- "embedded-graphics",
- "embedded-hal 1.0.0",
- "hub75-pio 0.1.0 (git+https://github.com/kjagiello/hub75-pio-rs)",
- "panic-probe",
- "rp-pico 0.9.0",
 ]
 
 [[package]]
@@ -2560,19 +2503,7 @@ dependencies = [
  "libm",
  "pio",
  "pio-proc",
- "rp2040-hal 0.9.2",
-]
-
-[[package]]
-name = "hub75-pio"
-version = "0.1.0"
-source = "git+https://github.com/kjagiello/hub75-pio-rs#262bca716990f0c7eb54b6d6f40578498a78a505"
-dependencies = [
- "embedded-graphics",
- "libm",
- "pio",
- "pio-proc",
- "rp2040-hal 0.9.2",
+ "rp2040-hal",
 ]
 
 [[package]]
@@ -3748,12 +3679,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "portable-atomic"
-version = "1.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "da544ee218f0d287a911e9c99a39a8c9bc8fcad3cb8db5959940044ecfc67265"
-
-[[package]]
 name = "postcard"
 version = "1.0.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4039,21 +3964,8 @@ dependencies = [
  "cortex-m-rt",
  "fugit",
  "rp2040-boot2",
- "rp2040-hal 0.9.2",
- "usb-device 0.2.9",
-]
-
-[[package]]
-name = "rp-pico"
-version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b9342d3ac7011ac688300979e9b52a81f0add1d05feb02868cf94bfee0705b28"
-dependencies = [
- "cortex-m-rt",
- "fugit",
- "rp2040-boot2",
- "rp2040-hal 0.10.2",
- "usb-device 0.3.2",
+ "rp2040-hal",
+ "usb-device",
 ]
 
 [[package]]
@@ -4074,7 +3986,7 @@ dependencies = [
  "cortex-m",
  "critical-section 1.1.3",
  "embedded-dma",
- "embedded-hal 0.2.7",
+ "embedded-hal",
  "frunk",
  "fugit",
  "itertools 0.10.5",
@@ -4083,37 +3995,8 @@ dependencies = [
  "pio",
  "rand_core",
  "rp2040-hal-macros",
- "rp2040-pac 0.5.0",
- "usb-device 0.2.9",
- "vcell",
- "void",
-]
-
-[[package]]
-name = "rp2040-hal"
-version = "0.10.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d11e711940087f2cdff8aeae9f4b902e2014c06a00b39a1092686b81ec973d6f"
-dependencies = [
- "bitfield 0.14.0",
- "cortex-m",
- "critical-section 1.1.3",
- "embedded-dma",
- "embedded-hal 0.2.7",
- "embedded-hal 1.0.0",
- "embedded-hal-async",
- "embedded-hal-nb",
- "embedded-io 0.6.1",
- "frunk",
- "fugit",
- "itertools 0.10.5",
- "nb 1.1.0",
- "paste",
- "pio",
- "rand_core",
- "rp2040-hal-macros",
- "rp2040-pac 0.6.0",
- "usb-device 0.3.2",
+ "rp2040-pac",
+ "usb-device",
  "vcell",
  "void",
 ]
@@ -4135,18 +4018,6 @@ name = "rp2040-pac"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "12d9d8375815f543f54835d01160d4e47f9e2cae75f17ff8f1ec19ce1da96e4c"
-dependencies = [
- "cortex-m",
- "cortex-m-rt",
- "critical-section 1.1.3",
- "vcell",
-]
-
-[[package]]
-name = "rp2040-pac"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "83cbcd3f7a0ca7bbe61dc4eb7e202842bee4e27b769a7bf3a4a72fa399d6e404"
 dependencies = [
  "cortex-m",
  "cortex-m-rt",
@@ -4734,24 +4605,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "usb-device"
-version = "0.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "98816b1accafbb09085168b90f27e93d790b4bfa19d883466b5e53315b5f06a6"
-dependencies = [
- "heapless 0.8.0",
- "portable-atomic",
-]
-
-[[package]]
 name = "usbd-serial"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "db75519b86287f12dcf0d171c7cf4ecc839149fe9f3b720ac4cfce52959e1dfe"
 dependencies = [
- "embedded-hal 0.2.7",
+ "embedded-hal",
  "nb 0.1.3",
- "usb-device 0.2.9",
+ "usb-device",
 ]
 
 [[package]]
