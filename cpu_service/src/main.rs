@@ -29,7 +29,7 @@ fn main() {
         println!("Sending {} bytes of cpu usage data", serialized.len());
         let bytes_written = serial.write(&serialized).unwrap();
         assert_eq!(bytes_written, serialized.len());
-        std::thread::sleep(Duration::from_millis(300));
+        std::thread::sleep(sysinfo::MINIMUM_CPU_UPDATE_INTERVAL);
     }
 }
 

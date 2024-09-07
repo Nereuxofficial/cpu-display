@@ -188,7 +188,6 @@ fn main() -> ! {
         }).flatten();
         display.draw_iter(pixels).unwrap();
         display.commit();
-        delay.delay_ms(100);
     }
 }
 
