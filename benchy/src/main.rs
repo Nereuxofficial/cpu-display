@@ -161,7 +161,7 @@ fn main() -> ! {
     loop {
         let cpu_usages: Packet = loop {
             if usb_dev.poll(&mut [&mut serial]){
-                let mut buf = [0u8; 1024];
+                let mut buf = [0u8; 196];
                 match serial.read(&mut buf){
                     Err(e) => {
                         info!("{:?}", e);
