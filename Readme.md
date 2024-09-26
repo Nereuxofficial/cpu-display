@@ -31,7 +31,11 @@ Then run the command:
 cargo r -r
 ```
 And the firmware should be flashed and then your RP2040 board should reboot.
-
+## Running the CPU usage service
+To send the CPU usage data to the your RP2040 board the cpu_service needs to be running. To do this run:
+```
+cargo r -r -- /dev/ttyACM1 # With the path here being the serial port of the device. You may need to adjust your udev rules for this to work
+````
 
 
 ## Credits
